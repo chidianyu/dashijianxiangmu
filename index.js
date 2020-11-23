@@ -1,87 +1,51 @@
 $(function () {
-
-    $("#link_reg").on("click", function () {
-        $('.login-box').hide();
-        $('.reg-box').show();
-
-    })
-    $("#link_login").on("click", function () {
-        $('.login-box').show();
-        $('.reg-box').hide()
-
-    })
-
-    let form = layui.form
-
-    form.verify({
-
-        passs: [/^[\S]{6,12}$/, '密码必须6到12位，且不能出现空格'],
-        repwd: function (value) {
-
-            let pass = $('.reg-box [name=password]').val()
-            if (pass !== value) {
-                return '两次密码不一致'
-            }
-
-        }
-
-    });
-    // 监听注册表单的提交事件
-    $('#form_reg').on('submit', function (e) {
-        // 1. 阻止默认的提交行为
+    getUserInfo()
+    var layer = layui.layer
+    $('#btnLogout').on('click', function (e) {
         e.preventDefault()
-        let data = {
-            username: $('#form_reg [name=username]').val(),
-            password: $('#form_reg [name=password]').val(),
-        }
-        $.post('http://ajax.frontend.itheima.net/api/reguser', data, function (res) {
-            if (res.status !== 0) {
-                return layer.msg(res.message)
-            }
-
-            layer.msg('注册成功，请登录！')
+        console.log(123);
+        layer.confirm('退出登录?', { icon: 3, title: '提示' }, function (index) {
+            localStorage.removeItem('token')
+            location.href = '/login.html'
+            layer.close(index)
         })
-    })
 
-    let layer = layui.layer
-    // var layer = layui.layer
-    $('#form_login').on('submit', function (e) {
-        e.preventDefault()
+    })
+    // 渲染用户的头像
+
+    function getUserInfo() {
         $.ajax({
-            url: 'http://ajax.frontend.itheima.net/api/login',
-            method: 'POST',
-            data: $(this).serialize(),
+            method: 'GET',
+            url: '/my/userinfo',
+            // headers 就是请求头配置对象
+            headers: {
+                Authorization: localStorage.getItem('token') || ''
+            },
             success: function (res) {
-                // console.log(res);
                 if (res.status !== 0) {
-                    return layer.msg('登陆失败')
+                    return layui.layer.msg('获取用户信息失败！')
                 }
-                layer.msg('注册成功，请登录！')
-                localStorage.setItem('token', res.token)
-                location.href = '/indexx.html'
-
+                // 调用 renderAvatar 渲染用户的头像
+                renderAvatar(res.data)
             }
         })
-
-    })
+    }
 })
-
-getUserInfo()
-
-
-function getUserInfo() {
-    $.ajax({
-        method: "GET",
-        url: "http://www.escook.cn:8086/my/userinfo",
-        headers: {
-            Authorization: localStorage.setItem('token') || ''
-        },
-        success: function (res) {
-            if (res.success !== 0) {
-                return layui.layer.msg('获取用户信息失败！')
-            }
-        }
-    });
+// function getUserInfo() {
+//     $.ajax({
+//         method: 'GET',
+//         url: '/my/userinfo',
+//         success: function (res) {
+//             if (res.status !== 0) {
+//                 return layer.msg("获取用户信息失败")
+//             }
+//         }
 
 
-}
+
+//     })
+
+// }
+
+
+// 点击按钮，实现退出功能
